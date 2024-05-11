@@ -1,0 +1,654 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "id": "dpoPi5UdfhW3"
+   },
+   "source": [
+    "IRIS DATASET\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 156,
+   "metadata": {
+    "id": "ESiNrWuTdSnF"
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, classification_report\n",
+    "from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict\n",
+    "from sklearn.tree import DecisionTreeClassifier\n",
+    "from sklearn.datasets import load_iris\n",
+    "from sklearn.preprocessing import StandardScaler\n",
+    "from sklearn.tree import plot_tree\n",
+    "from sklearn.neighbors import KNeighborsClassifier\n",
+    "from sklearn.naive_bayes import GaussianNB\n",
+    "import matplotlib.pyplot as plt\n",
+    "import seaborn as sns\n",
+    "import pandas as pd\n",
+    "import numpy as np"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 157,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "qa2LNo-EfgkJ",
+    "outputId": "0b0ece48-90eb-4b48-d57c-5862dc376224"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(150, 4)\n",
+      "(150,)\n"
+     ]
+    }
+   ],
+   "source": [
+    "iris = load_iris()\n",
+    "x=iris.data\n",
+    "y=iris.target\n",
+    "print(x.shape)\n",
+    "print(y.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 158,
+   "metadata": {
+    "id": "rIBbITCi1vZg"
+   },
+   "outputs": [],
+   "source": [
+    "scaler = StandardScaler()\n",
+    "X_scaled = scaler.fit_transform(x)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "id": "aFshA4Rvf4xl"
+   },
+   "source": [
+    "(i) Hold Out Method, Test size = 25%"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 159,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "CIywBVFkgtEA",
+    "outputId": "fc7ff638-a67c-41ab-a8ea-4c565e792cb4"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Shape of X_train:  (112, 4)\n",
+      "Shape of X_test:  (38, 4)\n",
+      "Shape of y_train:  (112,)\n",
+      "Shape of y_test:  (38,)\n"
+     ]
+    }
+   ],
+   "source": [
+    "k_size = 0.25\n",
+    "r_seeds = 100\n",
+    "X_train, X_test, y_train, y_test = train_test_split(x,y,test_size = k_size, random_state=r_seeds)\n",
+    "print(\"Shape of X_train: \", X_train.shape)\n",
+    "print(\"Shape of X_test: \", X_test.shape)\n",
+    "print(\"Shape of y_train: \", y_train.shape)\n",
+    "print(\"Shape of y_test: \", y_test.shape)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "id": "weJrpXNkiDBm"
+   },
+   "source": [
+    "Decision Tree Classification"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 160,
+   "metadata": {
+    "id": "rtWUy0cGg36O"
+   },
+   "outputs": [],
+   "source": [
+    "deci_tree = DecisionTreeClassifier(criterion='entropy')\n",
+    "deci_tree.fit(X_train, y_train)\n",
+    "prediction = deci_tree.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 161,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 564
+    },
+    "id": "Bogk4FeAiCuQ",
+    "outputId": "0a4c0b59-4405-4116-8352-a111745b6da2"
+   },
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAqsAAAIjCAYAAAAk+FJEAAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjcuMSwgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy/bCgiHAAAACXBIWXMAAA9hAAAPYQGoP6dpAAA0B0lEQVR4nO3deVRU9f/H8deAMiAiILhnmBtirpmZGqJftyxzy8y0QlJbXDK31MoFrfj+zKXIzMpSNP1qm5ZbaZmaaeWulZm455qomAqIzP390WFqQo1BcD7I83EO5zSfe+fe9/A9+H16vTPYLMuyBAAAABjIy9MDAAAAAFdCrAIAAMBYxCoAAACMRawCAADAWMQqAAAAjEWsAgAAwFjEKgAAAIxFrAIAAMBYxCoAAACMRawCwGXs3r1brVq1UmBgoGw2mxYuXJirx9+/f79sNptmzpyZq8fNz5o2baqmTZt6egwAhiFWARhrz549euKJJ1SxYkX5+vqqWLFiaty4sV577TWlpKTk6bmjo6O1Y8cOvfTSS5o9e7Zuv/32PD3f9dSjRw/ZbDYVK1bsst/H3bt3y2azyWazacKECW4f/8iRIxozZoy2bt2aC9MCKOgKeXoAALicJUuW6IEHHpDdbtejjz6qGjVq6OLFi1q7dq2GDh2qn376SW+//XaenDslJUXr16/X888/r379+uXJOcLCwpSSkqLChQvnyfH/TaFChXThwgUtWrRIXbp0cdk2Z84c+fr6KjU1NUfHPnLkiGJjY1WhQgXVqVMn289bvnx5js4H4MZGrAIwzr59+9S1a1eFhYVp5cqVKlOmjHNb3759lZiYqCVLluTZ+X///XdJUlBQUJ6dw2azydfXN8+O/2/sdrsaN26s//3vf1lide7cubr33nv18ccfX5dZLly4oCJFisjHx+e6nA9A/sJtAACMM378eJ07d07vvvuuS6hmqly5sgYMGOB8fOnSJY0bN06VKlWS3W5XhQoV9NxzzyktLc3leRUqVFDbtm21du1a3XHHHfL19VXFihU1a9Ys5z5jxoxRWFiYJGno0KGy2WyqUKGCpD//+Tzzv/9uzJgxstlsLmsrVqzQXXfdpaCgIBUtWlTh4eF67rnnnNuvdM/qypUrFRkZKX9/fwUFBal9+/bauXPnZc+XmJioHj16KCgoSIGBgYqJidGFCxeu/I39h27dumnZsmU6c+aMc23Dhg3avXu3unXrlmX/U6dOaciQIapZs6aKFi2qYsWKqU2bNtq2bZtzn1WrVql+/fqSpJiYGOftBJmvs2nTpqpRo4Y2bdqkJk2aqEiRIs7vyz/vWY2Ojpavr2+W19+6dWsFBwfryJEj2X6tAPIvYhWAcRYtWqSKFSuqUaNG2dq/V69eGjVqlG677TZNnjxZUVFRiouLU9euXbPsm5iYqM6dO6tly5aaOHGigoOD1aNHD/3000+SpE6dOmny5MmSpIceekizZ8/Wq6++6tb8P/30k9q2bau0tDSNHTtWEydOVLt27fTtt99e9XlffvmlWrdurRMnTmjMmDEaNGiQ1q1bp8aNG2v//v1Z9u/SpYv++OMPxcXFqUuXLpo5c6ZiY2OzPWenTp1ks9n0ySefONfmzp2ratWq6bbbbsuy/969e7Vw4UK1bdtWkyZN0tChQ7Vjxw5FRUU5wzEiIkJjx46VJD3++OOaPXu2Zs+erSZNmjiPk5SUpDZt2qhOnTp69dVX1axZs8vO99prr6lEiRKKjo5WRkaGJOmtt97S8uXL9frrr6ts2bLZfq0A8jELAAySnJxsSbLat2+frf23bt1qSbJ69erlsj5kyBBLkrVy5UrnWlhYmCXJWrNmjXPtxIkTlt1utwYPHuxc27dvnyXJeuWVV1yOGR0dbYWFhWWZYfTo0dbf/zidPHmyJcn6/fffrzh35jlmzJjhXKtTp45VsmRJKykpybm2bds2y8vLy3r00UeznO+xxx5zOWbHjh2tkJCQK57z76/D39/fsizL6ty5s9W8eXPLsiwrIyPDKl26tBUbG3vZ70FqaqqVkZGR5XXY7XZr7NixzrUNGzZkeW2ZoqKiLEnWtGnTLrstKirKZe2LL76wJFkvvviitXfvXqto0aJWhw4d/vU1ArhxcGUVgFHOnj0rSQoICMjW/kuXLpUkDRo0yGV98ODBkpTl3tbq1asrMjLS+bhEiRIKDw/X3r17czzzP2Xe6/rpp5/K4XBk6zlHjx7V1q1b1aNHDxUvXty5XqtWLbVs2dL5Ov/uySefdHkcGRmppKQk5/cwO7p166ZVq1bp2LFjWrlypY4dO3bZWwCkP+9z9fL68/82MjIylJSU5LzFYfPmzdk+p91uV0xMTLb2bdWqlZ544gmNHTtWnTp1kq+vr956661snwtA/kesAjBKsWLFJEl//PFHtvY/cOCAvLy8VLlyZZf10qVLKygoSAcOHHBZv/nmm7McIzg4WKdPn87hxFk9+OCDaty4sXr16qVSpUqpa9eu+uCDD64arplzhoeHZ9kWERGhkydP6vz58y7r/3wtwcHBkuTWa7nnnnsUEBCg+fPna86cOapfv36W72Umh8OhyZMnq0qVKrLb7QoNDVWJEiW0fft2JScnZ/uc5cqVc+vNVBMmTFDx4sW1detWxcfHq2TJktl+LoD8j1gFYJRixYqpbNmy+vHHH9163j/f4HQl3t7el123LCvH58i8nzKTn5+f1qxZoy+//FKPPPKItm/frgcffFAtW7bMsu+1uJbXkslut6tTp05KSEjQggULrnhVVZJefvllDRo0SE2aNNH777+vL774QitWrNCtt96a7SvI0p/fH3ds2bJFJ06ckCTt2LHDrecCyP+IVQDGadu2rfbs2aP169f/675hYWFyOBzavXu3y/rx48d15swZ5zv7c0NwcLDLO+cz/fPqrSR5eXmpefPmmjRpkn7++We99NJLWrlypb7++uvLHjtzzl27dmXZ9ssvvyg0NFT+/v7X9gKuoFu3btqyZYv++OOPy74pLdNHH32kZs2a6d1331XXrl3VqlUrtWjRIsv3JLt/cciO8+fPKyYmRtWrV9fjjz+u8ePHa8OGDbl2fADmI1YBGOfZZ5+Vv7+/evXqpePHj2fZvmfPHr322muS/vxnbElZ3rE/adIkSdK9996ba3NVqlRJycnJ2r59u3Pt6NGjWrBggct+p06dyvLczA/H/+fHaWUqU6aM6tSpo4SEBJf4+/HHH7V8+XLn68wLzZo107hx4zRlyhSVLl36ivt5e3tnuWr74Ycf6vDhwy5rmVF9ubB317Bhw3Tw4EElJCRo0qRJqlChgqKjo6/4fQRw4+GXAgAwTqVKlTR37lw9+OCDioiIcPkNVuvWrdOHH36oHj16SJJq166t6Ohovf322zpz5oyioqL0ww8/KCEhQR06dLjixyLlRNeuXTVs2DB17NhRTz/9tC5cuKA333xTVatWdXmD0dixY7VmzRrde++9CgsL04kTJzR16lTddNNNuuuuu654/FdeeUVt2rRRw4YN1bNnT6WkpOj1119XYGCgxowZk2uv45+8vLz0wgsv/Ot+bdu21dixYxUTE6NGjRppx44dmjNn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2WxasGCBOnTo4OlRgHzn999/V8mSJbV69Wo1adLE0+PATVxZRZ67ePGiNm3apBYtWjjXvLy81KJFC61fv96DkwEACoLk5GRJUvHixT08CXKCWEWeO3nypDIyMlSqVCmX9VKlSunYsWMemgoAUBA4HA4988wzaty4sWrUqOHpcZADhTw9AAAAQF7p27evfvzxR61du9bToyCHiFXkudDQUHl7e+v48eMu68ePH1fp0qU9NBUA4EbXr18/LV68WGvWrNFNN93k6XGQQ9wGgDzn4+OjevXq6auvvnKuORwOffXVV2rYsKEHJwMA3Igsy1K/fv20YMECrVy5UrfccounR8I14MoqrotBgwYpOjpat99+u+644w69+uqrOn/+vGJiYjw9GmCsc+fOKTEx0fl437592rp1q4oXL66bb77Zg5MBZuvbt6/mzp2rTz/9VAEBAc73RwQGBsrPz8/D08FdfHQVrpspU6bolVde0bFjx1SnTh3Fx8erQYMGnh4LMNaqVavUrFmzLOvR0dGaOXPm9R8IyCdsNttl12fMmKEePXpc32FwzYhVAAAAGIt7VgEAAGAsYhUAAADGIlYBAABgLGIVAAAAxiJWAQAAYCxiFQAAAMYiVgEAAGAsYhUAAADGIlYBIId69OihDh06OB83bdpUzzzzzHWfY9WqVbLZbDpz5swV97HZbFq4cGG2jzlmzBjVqVPnmubav3+/bDabtm7dek3HAVCwEasAbig9evSQzWaTzWaTj4+PKleurLFjx+rSpUt5fu5PPvlE48aNy9a+2QlMAIBUyNMDAEBuu/vuuzVjxgylpaVp6dKl6tu3rwoXLqwRI0Zk2ffixYvy8fHJlfMWL148V44DAPgLV1YB3HDsdrtKly6tsLAwPfXUU2rRooU+++wzSX/90/1LL72ksmXLKjw8XJJ06NAhdenSRUFBQSpevLjat2+v/fv3O4+ZkZGhQYMGKSgoSCEhIXr22WdlWZbLef95G0BaWpqGDRum8uXLy263q3Llynr33Xe1f/9+NWvWTJIUHBwsm82mHj16SJIcDofi4uJ0yy23yM/PT7Vr19ZHH33kcp6lS5eqatWq8vPzU7NmzVzmzK5hw4apatWqKlKkiCpWrKiRI0cqPT09y35vvfWWypcvryJFiqhLly5KTk522T59+nRFRETI19dX1apV09SpU694ztOnT6t79+4qUaKE/Pz8VKVKFc2YMcPt2QEULFxZBXDD8/PzU1JSkvPxV199pWLFimnFihWSpPT0dLVu3VoNGzbUN998o0KFCunFF1/U3Xffre3bt8vHx0cTJ07UzJkz9d577ykiIkITJ07UggUL9J///OeK53300Ue1fv16xcfHq3bt2tq3b59Onjyp8uXL6+OPP9b999+vXbt2qVixYvLz85MkxcXF6f3339e0adNUpUoVrVmzRg8//LBKlCihqKgoHTp0SJ06dVLfvn31+OOPa+PGjRo8eLDb35OAgADNnDlTZcuW1Y4dO9S7d28FBATo2Wefde6TmJioDz74QIsWLdLZs2fVs2dP9enTR3PmzJEkzZkzR6NGjdKUKVNUt25dbdmyRb1795a/v7+io6OznHPkyJH6+eeftWzZMoWGhioxMVEpKSluzw6ggLEA4AYSHR1ttW/f3rIsy3I4HNaKFSssu91uDRkyxLm9VKlSVlpamvM5s2fPtsLDwy2Hw+FcS0tLs/z8/KwvvvjCsizLKlOmjDV+/Hjn9vT0dOumm25ynsuyLCsqKsoaMGCAZVmWtWvXLkuStWLFisvO+fXXX1uSrNOnTzvXUlNTrSJFiljr1q1z2bdnz57WQw89ZFmWZY0YMcKqXr26y/Zhw4ZlOdY/SbIWLFhwxe2vvPKKVa9ePefj0aNHW97e3tZvv/3mXFu2bJnl5eVlHT161LIsy6pUqZI1d+5cl+OMGzfOatiwoWVZlrVv3z5LkrVlyxbLsizrvvvus2JiYq44AwBcDldWAdxwFi9erKJFiyo9PV0Oh0PdunXTmDFjnNtr1qzpcp/qtm3blJiYqICAAJfjpKamas+ePUpOTtbRo0fVoEED57ZChQrp9ttvz3IrQKatW7fK29tbUVFR2Z47MTFRFy5cUMuWLV3WL168qLp160qSdu7c6TKHJDVs2DDb58g0f/58xcfHa8+ePTp37pwuXbqkYsWKuexz8803q1y5ci7ncTgc2rVrlwICArRnzx717NlTvXv3du5z6dIlBQYGXvacTz31lO6//35t3rxZrVq1UocOHdSoUSO3ZwdQsBCrAG44zZo105tvvikfHx+VLVtWhQq5/lHn7+/v8vjcuXOqV6+e85+3/65EiRI5miHzn/Xdce7cOUnSkiVLXCJR+vM+3Nyyfv16de/eXbGxsWrdurUCAwM1b948TZw40e1Z33nnnSzx7O3tfdnntGnTRgcOHNDSpUu1YsUKNW/eXH379tWECRNy/mIA3PCIVQA3HH9/f1WuXDnb+992222aP3++SpYsmeXqYqYyZcro+++/V5MmTST9eQVx06ZNuu222y67f82aNeVwOLR69Wq1aNEiy/bMK7sZGRnOterVq8tut+vgwYNXvCIbERHhfLNYpu++++7fX+TfrFu3TmFhYXr++eedawcOHMiy38GDB3XkyBGVLVvWeR4vLy+Fh4erVKlSKlu2rPbu3avu3btn+9wlSpRQdHS0oqOjFRkZqaFDhxKrAK6KTwMAUOB1795doaGhat++vb755hvt27dPq1at0tNPP63ffvtNkjRgwAD997//1cKFC/XLL7+oT58+V/2M1AoVKig6OlqPPfaYFi5c6DzmBx98IEkKCwuTzWbT4sWL9fvvv+vcuXMKCAjQkCFDNHDgQCUkJGjPnj3avHmzXn/9dSUkJEiSnnzySe3evVtDhw7Vrl27NHfuXM2cOdOt11ulShUdPHhQ8+bN0549exQfH68FCxZk2c/X11fR0dHatm2bvvnmGz399NPq0qWLSpcuLUmKjY1VXFyc4uPj9euvv2rHjh2aMWOGJk2adNnzjho1Sp9++qkSExP1008/afHixYqIiHBrdgAFD7EKoMArUqSI1qxZo5tvvlmdOnVSRESEevbsqdTUVOeV1sGDB+uRRx5RdHS0GjZsqICAAHXs2PGqx33zzTfVuXNn9enTR9WqVVPv3r11/vx5SVK5cuUUGxur4cOHq1SpUurXr58kady4cRo5cqTi4uIUERGhu+++W0uWLNEtt9wi6c/7SD/++GMtXLhQtWvX1rRp0/Tyyy+79XrbtWungQMHql+/fqpTp47WrVunkSNHZtmvcuXK6tSpk+655x61atVKtWrVcvloql69emn69OmaMWOGatasqaioKM2cOdM56z/5+PhoxIgRqlWrlpo0aSJvb2/NmzfPrdkBFDw260rvDgAAAAA8jCurAAAAMBaxCgAAAGMRqwAAADAWsQoAAABjEasAAAAwFrEKAAAAYxGrAAAAMBaxCgAAAGMRqwAAADAWsQoAAABjEasAAAAw1v8Df68Nvv00R6oAAAAASUVORK5CYII=\n",
+      "text/plain": [
+       "<Figure size 800x600 with 1 Axes>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "cm = confusion_matrix(y_test, prediction)\n",
+    "\n",
+    "plt.figure(figsize=(8, 6))\n",
+    "sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)\n",
+    "plt.xlabel('Predicted labels')\n",
+    "plt.ylabel('True labels')\n",
+    "plt.title('Confusion Matrix')\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 162,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "EXBTH-SCyZWC",
+    "outputId": "321ceeef-8a5a-431d-cec3-0502842671b1"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy on Hold Out method using classification: 94.73684210526315 %\n",
+      "Classification Report:\n",
+      "               precision    recall  f1-score   support\n",
+      "\n",
+      "           0       1.00      1.00      1.00        14\n",
+      "           1       0.90      0.90      0.90        10\n",
+      "           2       0.93      0.93      0.93        14\n",
+      "\n",
+      "    accuracy                           0.95        38\n",
+      "   macro avg       0.94      0.94      0.94        38\n",
+      "weighted avg       0.95      0.95      0.95        38\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "accuracy_dt1 = accuracy_score(y_test, prediction)\n",
+    "print(\"Accuracy on Hold Out method using classification:\", accuracy_dt1*100,\"%\")\n",
+    "\n",
+    "report = classification_report(y_test, prediction)\n",
+    "print(\"Classification Report:\\n\", report)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "id": "0i8yH20U0BYO"
+   },
+   "source": [
+    "KNearest Neighbour Classification"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 163,
+   "metadata": {
+    "id": "pOAwONKezW7I"
+   },
+   "outputs": [],
+   "source": [
+    "knn = KNeighborsClassifier()\n",
+    "knn.fit(X_train, y_train)\n",
+    "prediction2 = knn.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 164,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "oXskjqkE0gEw",
+    "outputId": "fdc6c2f7-0608-41f2-88be-816165d5d231"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy on Hold Out method using classification: 97.36842105263158 %\n",
+      "Classification Report:\n",
+      "               precision    recall  f1-score   support\n",
+      "\n",
+      "           0       1.00      1.00      1.00        14\n",
+      "           1       0.91      1.00      0.95        10\n",
+      "           2       1.00      0.93      0.96        14\n",
+      "\n",
+      "    accuracy                           0.97        38\n",
+      "   macro avg       0.97      0.98      0.97        38\n",
+      "weighted avg       0.98      0.97      0.97        38\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "accuracy_knn1 = accuracy_score(y_test, prediction2)\n",
+    "print(\"Accuracy on Hold Out method using classification:\", accuracy_knn1*100,\"%\")\n",
+    "\n",
+    "report = classification_report(y_test, prediction2)\n",
+    "print(\"Classification Report:\\n\", report)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "id": "rxBUcqro0rAf"
+   },
+   "source": [
+    "Naive Bayes"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 165,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/",
+     "height": 75
+    },
+    "id": "afSOzuEn0qU1",
+    "outputId": "30f85015-fa47-4733-b471-4db7e79eb277"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<style>#sk-container-id-11 {color: black;background-color: white;}#sk-container-id-11 pre{padding: 0;}#sk-container-id-11 div.sk-toggleable {background-color: white;}#sk-container-id-11 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-11 label.sk-toggleable__label-arrow:before {content: \"▸\";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-11 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-11 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-11 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-11 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-11 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-11 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: \"▾\";}#sk-container-id-11 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-11 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-11 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-11 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-11 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-11 div.sk-parallel-item::after {content: \"\";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-11 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-11 div.sk-serial::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-11 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-11 div.sk-item {position: relative;z-index: 1;}#sk-container-id-11 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-11 div.sk-item::before, #sk-container-id-11 div.sk-parallel-item::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-11 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-11 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-11 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-11 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-11 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-11 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-11 div.sk-label-container {text-align: center;}#sk-container-id-11 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-11 div.sk-text-repr-fallback {display: none;}</style><div id=\"sk-container-id-11\" class=\"sk-top-container\"><div class=\"sk-text-repr-fallback\"><pre>GaussianNB()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class=\"sk-container\" hidden><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-11\" type=\"checkbox\" checked><label for=\"sk-estimator-id-11\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">GaussianNB</label><div class=\"sk-toggleable__content\"><pre>GaussianNB()</pre></div></div></div></div></div>"
+      ],
+      "text/plain": [
+       "GaussianNB()"
+      ]
+     },
+     "execution_count": 165,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "nb = GaussianNB()\n",
+    "nb.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 166,
+   "metadata": {
+    "id": "uzBRSdp70-4Q"
+   },
+   "outputs": [],
+   "source": [
+    "prediction3 = nb.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 167,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "kMn-Aa8J1P2n",
+    "outputId": "2e798f8e-538c-49f8-ded7-8663354fc6f6"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy on Hold Out method using classification: 94.73684210526315 %\n",
+      "Classification Report:\n",
+      "               precision    recall  f1-score   support\n",
+      "\n",
+      "           0       1.00      1.00      1.00        14\n",
+      "           1       0.90      0.90      0.90        10\n",
+      "           2       0.93      0.93      0.93        14\n",
+      "\n",
+      "    accuracy                           0.95        38\n",
+      "   macro avg       0.94      0.94      0.94        38\n",
+      "weighted avg       0.95      0.95      0.95        38\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "accuracy_nb1 = accuracy_score(y_test, prediction3)\n",
+    "print(\"Accuracy on Hold Out method using classification:\", accuracy_nb1*100,\"%\")\n",
+    "\n",
+    "report = classification_report(y_test, prediction3)\n",
+    "print(\"Classification Report:\\n\", report)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "id": "NZHXXIMp2JJY"
+   },
+   "source": [
+    "(ii) Random Subsampling"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 168,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "PKCuOMqHk93D",
+    "outputId": "fc720561-660a-4b4f-a860-afc420c6f358"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Average Accuracy on Random Subsampling method using Decision Tree classification: 95.0 %\n",
+      "Average Accuracy on Random Subsampling method using KNearest Neighbor classification: 96.3157894736842 %\n",
+      "Average Accuracy on Random Subsampling method using Naive Bayes classification: 94.73684210526316 %\n",
+      "\n",
+      "\n",
+      "Classification Report for Decision Tree:\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       1.00      1.00      1.00        13\n",
+      "           1       1.00      0.94      0.97        16\n",
+      "           2       0.90      1.00      0.95         9\n",
+      "\n",
+      "    accuracy                           0.97        38\n",
+      "   macro avg       0.97      0.98      0.97        38\n",
+      "weighted avg       0.98      0.97      0.97        38\n",
+      "\n",
+      "\n",
+      "Classification Report for KNearest Neighbor:\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       1.00      1.00      1.00        13\n",
+      "           1       1.00      0.94      0.97        16\n",
+      "           2       0.90      1.00      0.95         9\n",
+      "\n",
+      "    accuracy                           0.97        38\n",
+      "   macro avg       0.97      0.98      0.97        38\n",
+      "weighted avg       0.98      0.97      0.97        38\n",
+      "\n",
+      "\n",
+      "Classification Report for Naive Bayes:\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       1.00      1.00      1.00        13\n",
+      "           1       1.00      1.00      1.00        16\n",
+      "           2       1.00      1.00      1.00         9\n",
+      "\n",
+      "    accuracy                           1.00        38\n",
+      "   macro avg       1.00      1.00      1.00        38\n",
+      "weighted avg       1.00      1.00      1.00        38\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "iris = load_iris()\n",
+    "x = iris.data\n",
+    "y = iris.target\n",
+    "\n",
+    "scaler = StandardScaler()\n",
+    "X_scaled = scaler.fit_transform(x)\n",
+    "\n",
+    "# Number of iterations for random subsampling\n",
+    "iterations = 10\n",
+    "test_size = 0.25\n",
+    "\n",
+    "dt_accuracies = []\n",
+    "dt_reports = []\n",
+    "knn_accuracies = []\n",
+    "knn_reports = []\n",
+    "nb_accuracies = []\n",
+    "nb_reports = []\n",
+    "\n",
+    "for i in range(iterations):\n",
+    "\n",
+    "    # Splitting the dataset\n",
+    "    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=i)\n",
+    "\n",
+    "    # Decision Tree Classification\n",
+    "    deci_tree = DecisionTreeClassifier(criterion='entropy')\n",
+    "    deci_tree.fit(X_train, y_train)\n",
+    "    prediction_dt = deci_tree.predict(X_test)\n",
+    "    accuracy_dt = accuracy_score(y_test, prediction_dt)\n",
+    "    dt_accuracies.append(accuracy_dt)\n",
+    "    report_dt = classification_report(y_test, prediction_dt)\n",
+    "    dt_reports.append(report_dt)\n",
+    "\n",
+    "    # KNearest Neighbour Classification\n",
+    "    knn = KNeighborsClassifier()\n",
+    "    knn.fit(X_train, y_train)\n",
+    "    prediction_knn = knn.predict(X_test)\n",
+    "    accuracy_knn = accuracy_score(y_test, prediction_knn)\n",
+    "    knn_accuracies.append(accuracy_knn)\n",
+    "    report_knn = classification_report(y_test, prediction_knn)\n",
+    "    knn_reports.append(report_knn)\n",
+    "\n",
+    "    # Naive Bayes\n",
+    "    nb = GaussianNB()\n",
+    "    nb.fit(X_train, y_train)\n",
+    "    prediction_nb = nb.predict(X_test)\n",
+    "    accuracy_nb = accuracy_score(y_test, prediction_nb)\n",
+    "    nb_accuracies.append(accuracy_nb)\n",
+    "    report_nb = classification_report(y_test, prediction_nb)\n",
+    "    nb_reports.append(report_nb)\n",
+    "\n",
+    "# Average accuracies\n",
+    "accuracy_dt2 = np.mean(dt_accuracies)\n",
+    "accuracy_knn2 = np.mean(knn_accuracies)\n",
+    "accuracy_nb2 = np.mean(nb_accuracies)\n",
+    "\n",
+    "print(\"Average Accuracy on Random Subsampling method using Decision Tree classification:\", accuracy_dt2 * 100, \"%\")\n",
+    "print(\"Average Accuracy on Random Subsampling method using KNearest Neighbor classification:\", accuracy_knn2 * 100, \"%\")\n",
+    "print(\"Average Accuracy on Random Subsampling method using Naive Bayes classification:\", accuracy_nb2 * 100, \"%\")\n",
+    "\n",
+    "# Print classification reports\n",
+    "print(\"\\n\\nClassification Report for Decision Tree:\")\n",
+    "print(dt_reports[0])\n",
+    "print(\"\\nClassification Report for KNearest Neighbor:\")\n",
+    "print(knn_reports[0])\n",
+    "print(\"\\nClassification Report for Naive Bayes:\")\n",
+    "print(nb_reports[0])\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "id": "dMAW6bZZmYJm"
+   },
+   "source": [
+    "(iii) Cross Validation"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 169,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "flt_tGgymXnj",
+    "outputId": "859bd04a-3617-40fe-c276-06279dc454cd"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Classification Report for Decision Tree:\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       1.00      1.00      1.00        50\n",
+      "           1       0.92      0.94      0.93        50\n",
+      "           2       0.94      0.92      0.93        50\n",
+      "\n",
+      "    accuracy                           0.95       150\n",
+      "   macro avg       0.95      0.95      0.95       150\n",
+      "weighted avg       0.95      0.95      0.95       150\n",
+      "\n",
+      "Average Accuracy for Decision Tree: 96.0\n",
+      "\n",
+      "Classification Report for KNearest Neighbor:\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       1.00      1.00      1.00        50\n",
+      "           1       0.94      0.92      0.93        50\n",
+      "           2       0.92      0.94      0.93        50\n",
+      "\n",
+      "    accuracy                           0.95       150\n",
+      "   macro avg       0.95      0.95      0.95       150\n",
+      "weighted avg       0.95      0.95      0.95       150\n",
+      "\n",
+      "Average Accuracy for KNearest Neighbor: 95.33333333333334\n",
+      "\n",
+      "Classification Report for Naive Bayes:\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       1.00      1.00      1.00        50\n",
+      "           1       0.92      0.94      0.93        50\n",
+      "           2       0.94      0.92      0.93        50\n",
+      "\n",
+      "    accuracy                           0.95       150\n",
+      "   macro avg       0.95      0.95      0.95       150\n",
+      "weighted avg       0.95      0.95      0.95       150\n",
+      "\n",
+      "Average Accuracy for Naive Bayes: 95.33333333333334\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Decision Tree Classifier\n",
+    "deci_tree = DecisionTreeClassifier(criterion='entropy')\n",
+    "dt_scores = cross_val_score(deci_tree, X_scaled, y, cv=10)\n",
+    "accuracy_dt3 = np.mean(dt_scores)\n",
+    "dt_predictions = cross_val_predict(deci_tree, X_scaled, y, cv=10)\n",
+    "dt_report = classification_report(y, dt_predictions)\n",
+    "print(\"Classification Report for Decision Tree:\")\n",
+    "print(dt_report)\n",
+    "print(\"Average Accuracy for Decision Tree:\", accuracy_dt3 * 100)\n",
+    "\n",
+    "# KNearest Neighbors Classifier\n",
+    "knn = KNeighborsClassifier()\n",
+    "knn_scores = cross_val_score(knn, X_scaled, y, cv=10)\n",
+    "accuracy_knn3 = np.mean(knn_scores)\n",
+    "knn_predictions = cross_val_predict(knn, X_scaled, y, cv=10)\n",
+    "knn_report = classification_report(y, knn_predictions)\n",
+    "print(\"\\nClassification Report for KNearest Neighbor:\")\n",
+    "print(knn_report)\n",
+    "print(\"Average Accuracy for KNearest Neighbor:\", accuracy_knn3 * 100)\n",
+    "\n",
+    "# Naive Bayes Classifier\n",
+    "nb = GaussianNB()\n",
+    "nb_scores = cross_val_score(nb, X_scaled, y, cv=10)\n",
+    "accuracy_nb3 = np.mean(nb_scores)\n",
+    "nb_predictions = cross_val_predict(nb, X_scaled, y, cv=10)\n",
+    "nb_report = classification_report(y, nb_predictions)\n",
+    "print(\"\\nClassification Report for Naive Bayes:\")\n",
+    "print(nb_report)\n",
+    "print(\"Average Accuracy for Naive Bayes:\", accuracy_nb3 * 100)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 170,
+   "metadata": {
+    "colab": {
+     "base_uri": "https://localhost:8080/"
+    },
+    "id": "OMCK78zQydLz",
+    "outputId": "05dd0519-da5f-4cca-c3a7-fd03507e7dfd"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Accuracy Table:\n",
+      "                    Decision Tree  KNearest Neighbor  Naive Bayes\n",
+      "Hold Out                 0.947368           0.973684     0.947368\n",
+      "Random Subsampling       0.950000           0.963158     0.947368\n",
+      "Cross Validation         0.960000           0.953333     0.953333\n"
+     ]
+    }
+   ],
+   "source": [
+    "hold_out_accuracies = [accuracy_dt1, accuracy_knn1, accuracy_nb1]\n",
+    "random_subsampling_accuracies = [accuracy_dt2, accuracy_knn2, accuracy_nb2]\n",
+    "cross_val_accuracies = [accuracy_dt3, accuracy_knn3, accuracy_nb3]\n",
+    "\n",
+    "accuracies = [hold_out_accuracies, random_subsampling_accuracies, cross_val_accuracies]\n",
+    "\n",
+    "accuracy_table = pd.DataFrame(accuracies, columns=['Decision Tree', 'KNearest Neighbor', 'Naive Bayes'], index=['Hold Out', 'Random Subsampling', 'Cross Validation'])\n",
+    "\n",
+    "print(\"\\nAccuracy Table:\")\n",
+    "print(accuracy_table)\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "colab": {
+   "provenance": []
+  },
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}
